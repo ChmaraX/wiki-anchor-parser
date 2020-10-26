@@ -6,8 +6,8 @@ import java.io.*;
 public class Main {
 
     public static void main(String[] args) throws IOException, CompressorException {
-        String filePath = "/home/adam/projects/ing/vif/data/enwiki-latest-pages-articles-multistream.xml.bz2";
-        String filePathDecomp = "/home/adam/projects/vif-anchors/archive.xml";
+        String inputFilePath = "metawiki-latest-pages-articles.xml";
+        String outputFilePath = "sample.txt";
 
         /*
           current stats:
@@ -25,9 +25,13 @@ public class Main {
                 Writing: 0.07399998 seconds
          */
 
-        InputReader inputReader = new InputReader(filePathDecomp);
-        inputReader.readPagesFromFile(1000);
-        //System.out.println(pages.get(1));
+        InputReader inputReader = new InputReader(inputFilePath, outputFilePath);
+        inputReader.parseAndWritePages(1000);
+
+        InputReader outputReader = new InputReader(outputFilePath);
+        outputReader.readRecordsFromOutput(-1);
+
+
         System.out.println("done");
 
     }
