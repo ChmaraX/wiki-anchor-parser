@@ -1,38 +1,38 @@
 package com.vif;
 
 import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
-
-import java.util.HashMap;
+import com.google.common.collect.SetMultimap;
 
 public class Hashmap {
 
-    private HashMap<String, String> anchorLinkHm;
-    private HashMap<String, String> anchorTextHm;
+    private SetMultimap<String, String> anchorLinkSMM;
+    private SetMultimap<String, String> anchorTextSMM;
     private Multimap<String, String> anchorTextMM;
     private Multimap<String, String> anchorLinkMM;
 
     public Hashmap() {
-        this.anchorLinkHm = new HashMap<String, String>();
-        this.anchorTextHm = new HashMap<String, String>();
+        this.anchorLinkSMM = HashMultimap.create();
+        this.anchorTextSMM = HashMultimap.create();
         this.anchorTextMM = ArrayListMultimap.create();
         this.anchorLinkMM = ArrayListMultimap.create();
     }
 
-    public HashMap<String, String> getAnchorLinkHm() {
-        return anchorLinkHm;
+    public SetMultimap<String, String> getAnchorLinkSMM() {
+        return anchorLinkSMM;
     }
 
-    public void setAnchorLinkHm(HashMap<String, String> anchorLinkHm) {
-        this.anchorLinkHm = anchorLinkHm;
+    public void setAnchorLinkSMM(SetMultimap<String, String> anchorLinkSMM) {
+        this.anchorLinkSMM = anchorLinkSMM;
     }
 
-    public HashMap<String, String> getAnchorTextHm() {
-        return anchorTextHm;
+    public SetMultimap<String, String> getAnchorTextSMM() {
+        return anchorTextSMM;
     }
 
-    public void setAnchorTextHm(HashMap<String, String> anchorTextHm) {
-        this.anchorTextHm = anchorTextHm;
+    public void setAnchorTextSMM(SetMultimap<String, String> anchorTextSMM) {
+        this.anchorTextSMM = anchorTextSMM;
     }
 
     public Multimap<String, String> getAnchorTextMM() {

@@ -10,7 +10,8 @@ public class Parser {
 
     Pattern titlePattern = Pattern.compile("<title>(.*?)</title>");
     Pattern textPattern = Pattern.compile("<text.*>(.*?)</text>", Pattern.DOTALL);
-    Pattern anchorPattern = Pattern.compile("\\[\\[([^]\\[:]+)\\|([^]\\[:]+)]](\\p{L}*)", Pattern.DOTALL);
+    Pattern anchorPattern = Pattern.compile("\\[\\[([^]\\[:#/&;{$]+)\\|([^]\\[:]+)]](\\p{L}*)", Pattern.DOTALL);
+    //TODO ignore anchor tags inside <code> markup
 
     public Parser() {
     }
@@ -70,16 +71,20 @@ public class Parser {
             for (int j = 0; j < anchors.length; j++) {
                 String[] anchor = anchors[j].split("\\|\\|\\|");
 
-                // link is also text
+                // if link is also text
                 if (anchor.length == 1) {
-                    hashmap.getAnchorLinkHm().put(anchor[0], title); // Document Freq. HM
-                    hashmap.getAnchorTextHm().put(anchor[0], title);
-                    hashmap.getAnchorLinkMM().put(anchor[0], title); // Collection Freq. MM
+                    // Document Freq. HM
+                    hashmap.getAnchorLinkSMM().put(anchor[0], title); // { key: anchor_link1; value: [page1, page2] }
+                    hashmap.getAnchorTextSMM().put(anchor[0], title);
+                    // Collection Freq. MM
+                    hashmap.getAnchorLinkMM().put(anchor[0], title); // { key: anchor_link1; value: [page1, page2, page2] }
                     hashmap.getAnchorTextMM().put(anchor[0], title);
                 } else {
-                    hashmap.getAnchorLinkHm().put(anchor[0], title); // Document Freq. HM
-                    hashmap.getAnchorTextHm().put(anchor[1], title);
-                    hashmap.getAnchorLinkMM().put(anchor[0], title); // Collection Freq. MM
+                    // Document Freq. HM
+                    hashmap.getAnchorLinkSMM().put(anchor[0], title);
+                    hashmap.getAnchorTextSMM().put(anchor[1], title);
+                    // Collection Freq. MM
+                    hashmap.getAnchorLinkMM().put(anchor[0], title);
                     hashmap.getAnchorTextMM().put(anchor[1], title);
                 }
             }
