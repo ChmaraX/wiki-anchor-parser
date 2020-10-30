@@ -10,8 +10,8 @@ public class Parser {
 
     Pattern titlePattern = Pattern.compile("<title>(.*?)</title>");
     Pattern textPattern = Pattern.compile("<text.*>(.*?)</text>", Pattern.DOTALL);
-    Pattern anchorPattern = Pattern.compile("\\[\\[([^]\\[:#/&;{$]+)\\|([^]\\[:]+)]](\\p{L}*)", Pattern.DOTALL);
-    //TODO ignore anchor tags inside <code> markup
+    Pattern anchorPattern = Pattern.compile("(\\[\\[([^]\\[:#&;{$]+)\\|([^]\\[:]+)]]|\\[\\[([^]\\[:#&;{$]+)]])(\\p{L}*)(?![^&lt;]*&lt;/pre&gt;)", Pattern.DOTALL);
+    // regex explained: https://regex101.com/r/o5kqCH/2/
 
     public Parser() {
     }
@@ -50,9 +50,18 @@ public class Parser {
         ArrayList<String> anchorsParsed = new ArrayList<>();
 
         while (matcher.find()) {
-            String link = matcher.group(1).trim();
-            String text = matcher.group(2).trim();
-            String trail = matcher.group(3).trim();
+            String link = "";
+            String text = "";
+
+            if (matcher.group(2) != null && matcher.group(3) != null) {
+                link = matcher.group(2).trim();
+                text = matcher.group(3).trim();
+            } else {
+                text = matcher.group(4).trim();
+                link = matcher.group(4).trim();
+            }
+
+            String trail = matcher.group(5).trim();
 
             // "|||" is delimiter
             String anchor = link + "|||" + text + trail;
@@ -79,7 +88,7 @@ public class Parser {
                     // Collection Freq. MM
                     hashmap.getAnchorLinkMM().put(anchor[0], title); // { key: anchor_link1; value: [page1, page2, page2] }
                     hashmap.getAnchorTextMM().put(anchor[0], title);
-                } else {
+                } else if (anchor.length != 0){
                     // Document Freq. HM
                     hashmap.getAnchorLinkSMM().put(anchor[0], title);
                     hashmap.getAnchorTextSMM().put(anchor[1], title);

@@ -1,14 +1,12 @@
 package com.vif;
 
+import com.google.common.collect.Multimap;
 import com.google.common.collect.SetMultimap;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 
 public class InputReader {
 
@@ -51,21 +49,52 @@ public class InputReader {
             p.parseLineToHashMap(line, hm);
         }
 
-        writeLinkFreq(hm.getAnchorLinkSMM());
+        writeLinkFreq(hm.getAnchorLinkMM(), hm.getAnchorLinkSMM());
     }
 
-    public void writeLinkFreq(SetMultimap<String, String> linkSetMultiMap) throws IOException {
-        int max = 0;
-        String maxKey = null;
-        for (String key : linkSetMultiMap.keySet()) {
-            int timesUsed = linkSetMultiMap.get(key).toArray().length;
-            if (timesUsed > max) {
-                max = timesUsed;
-                maxKey = key;
+    // write link document and collection frequency to file + calculate top 10
+    public void writeLinkFreq(Multimap<String, String> multimap, SetMultimap<String, String> setMultiMap) throws IOException {
+        int[] maxValuesDoc = new int[10];
+        int[] maxValuesColl = new int[10];
+        String[] maxKeysDoc = new String[10];
+        String[] maxKeysColl = new String[10];
+
+        int docFreq_timesUsed = 0;
+        int collFreq_timesUsed = 0;
+
+        for (String key : multimap.keySet()) {
+            docFreq_timesUsed = multimap.get(key).toArray().length;
+            collFreq_timesUsed = setMultiMap.get(key).toArray().length;
+
+            // top 10 links for doc. freq.
+            for (int i = 0; i < maxValuesDoc.length; i++) {
+                if (docFreq_timesUsed > maxValuesDoc[i]) {
+                    maxValuesDoc[i] = docFreq_timesUsed;
+                    maxKeysDoc[i] = key;
+                    break;
+                }
             }
-            IOUtils.write(key + "\t" + timesUsed + "\n", out, "UTF-8");
+
+            // top 10 links for coll. freq.
+            for (int i = 0; i < maxValuesColl.length; i++) {
+                if (collFreq_timesUsed > maxValuesColl[i]) {
+                    maxValuesColl[i] = collFreq_timesUsed;
+                    maxKeysColl[i] = key;
+                    break;
+                }
+            }
+            IOUtils.write(key + "\t" + docFreq_timesUsed + "\t" + collFreq_timesUsed + "\n", out, "UTF-8");
         }
-        System.out.println(maxKey + " " + max);
+
+        System.out.println("\n=== Top 10 (Link Document Freq.) ===");
+        for (int i = 0; i < maxValuesDoc.length; i++) {
+            System.out.println(maxKeysDoc[i] + " - " + maxValuesDoc[i] + " (" + setMultiMap.get(maxKeysDoc[i]).toArray().length + ")");
+        }
+
+        System.out.println("\n=== Top 10 (Link Collection Freq.) ===");
+        for (int i = 0; i < maxValuesColl.length; i++) {
+            System.out.println(maxKeysColl[i] + " - " + maxValuesColl[i] + " (" + multimap.get(maxKeysColl[i]).toArray().length + ")");
+        }
     }
 
     public String readRawPage() throws IOException {

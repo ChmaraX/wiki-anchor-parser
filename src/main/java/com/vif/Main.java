@@ -11,7 +11,7 @@ public class Main {
         String docFreqFilePath = "link_doc_freq.txt";
 
         InputReader inputReader = new InputReader(inputFilePath, outputFilePath);
-        inputReader.proccessPages(10000);
+        inputReader.proccessPages(1000);
 
         InputReader outputReader = new InputReader(outputFilePath, docFreqFilePath);
         outputReader.readRecordsFromOutput(-1);
