@@ -9,12 +9,14 @@ public class Hashmap {
 
     private SetMultimap<String, String> anchorLinkSMM;
     private SetMultimap<String, String> anchorTextSMM;
+    private SetMultimap<String, Boolean> redirectSMM;
     private Multimap<String, String> anchorTextMM;
     private Multimap<String, String> anchorLinkMM;
 
     public Hashmap() {
         this.anchorLinkSMM = HashMultimap.create();
         this.anchorTextSMM = HashMultimap.create();
+        this.redirectSMM =  HashMultimap.create();
         this.anchorTextMM = ArrayListMultimap.create();
         this.anchorLinkMM = ArrayListMultimap.create();
     }
@@ -45,6 +47,14 @@ public class Hashmap {
 
     public Multimap<String, String> getAnchorLinkMM() {
         return anchorLinkMM;
+    }
+
+    public SetMultimap<String, Boolean> getRedirectSMM() {
+        return redirectSMM;
+    }
+
+    public void setRedirectSMM(SetMultimap<String, Boolean> redirectSMM) {
+        this.redirectSMM = redirectSMM;
     }
 
     public void setAnchorLinkMM(Multimap<String, String> anchorLinkMM) {

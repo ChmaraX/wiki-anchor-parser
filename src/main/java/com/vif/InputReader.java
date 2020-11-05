@@ -11,16 +11,25 @@ import java.util.*;
 public class InputReader {
 
     private final BufferedReader reader;
-    private FileOutputStream out = null;
+    private FileOutputStream out1 = null;
+    private FileOutputStream out2 = null;
+
     private final FileInputStream fileInputStream;
 
-    public InputReader(String fileIn, String fileOut) throws IOException {
+    public InputReader(String fileIn, String fileOut1, String fileOut2) throws IOException {
         this.fileInputStream = new FileInputStream(new File(fileIn));
         this.reader = new BufferedReader(new InputStreamReader(fileInputStream), 1000 * 8192);
-        this.out = new FileOutputStream(new File(fileOut));
+        this.out1 = new FileOutputStream(new File(fileOut1));
+        this.out2 = new FileOutputStream(new File(fileOut2));
     }
 
-    public void proccessPages(Integer pageCount) throws IOException {
+    public InputReader(String fileIn, String fileOut1) throws IOException {
+        this.fileInputStream = new FileInputStream(new File(fileIn));
+        this.reader = new BufferedReader(new InputStreamReader(fileInputStream), 1000 * 8192);
+        this.out1 = new FileOutputStream(new File(fileOut1));
+    }
+
+    public void processPages(Integer pageCount) throws IOException {
         int i = 0;
         // read certain number of lines or till end
         while (pageCount == -1 || i < pageCount) {
@@ -30,14 +39,19 @@ public class InputReader {
             Parser p = new Parser(page);
             String title = p.getTitle();
             ArrayList<String> anchors = p.getAnchors();
+            boolean isRedirect = p.isRedirect();
 
-            IOUtils.write(title + "\t" + StringUtils.join(anchors, "\t") + "\n", out, "UTF-8");
+            // write only if anchors found
+            if (anchors != null) {
+                IOUtils.write(title + "\t" + StringUtils.join(anchors, "\t") + "\t" + isRedirect + "\n", out1, "UTF-8");
+            }
+
         }
         reader.close();
         fileInputStream.close();
     }
 
-    public void readRecordsFromOutput(Integer recordCount) throws IOException {
+    public void processOutputFile(Integer recordCount) throws IOException {
         Hashmap hm = new Hashmap(); // Hashmaps for statistics
         Parser p = new Parser();
         String line;
@@ -49,51 +63,51 @@ public class InputReader {
             p.parseLineToHashMap(line, hm);
         }
 
-        writeLinkFreq(hm.getAnchorLinkMM(), hm.getAnchorLinkSMM());
+        // write anchor link frequencies
+        writeLinkFrequencies(hm.getAnchorLinkMM(), hm.getAnchorLinkSMM(), hm.getRedirectSMM(), out1);
+
+        // write anchor text frequencies
+        writeTextFrequencies(hm.getAnchorTextMM(), hm.getAnchorTextSMM(), out2);
     }
 
-    // write link document and collection frequency to file + calculate top 10
-    public void writeLinkFreq(Multimap<String, String> multimap, SetMultimap<String, String> setMultiMap) throws IOException {
-        int[] maxValuesDoc = new int[10];
-        int[] maxValuesColl = new int[10];
-        String[] maxKeysDoc = new String[10];
-        String[] maxKeysColl = new String[10];
-
+    // write link document and collection frequency (+ if its a redirect) to file
+    public void writeLinkFrequencies(Multimap<String, String> multimap,
+                                     SetMultimap<String, String> setMultiMap,
+                                     SetMultimap<String, Boolean> redirectMultiMap,
+                                     FileOutputStream output) throws IOException {
         int docFreq_timesUsed = 0;
         int collFreq_timesUsed = 0;
 
         for (String key : multimap.keySet()) {
-            docFreq_timesUsed = multimap.get(key).toArray().length;
-            collFreq_timesUsed = setMultiMap.get(key).toArray().length;
+            collFreq_timesUsed = multimap.get(key).toArray().length;
+            docFreq_timesUsed = setMultiMap.get(key).toArray().length;
+            String isRedirect = "";
 
-            // top 10 links for doc. freq.
-            for (int i = 0; i < maxValuesDoc.length; i++) {
-                if (docFreq_timesUsed > maxValuesDoc[i]) {
-                    maxValuesDoc[i] = docFreq_timesUsed;
-                    maxKeysDoc[i] = key;
-                    break;
-                }
+            if (key.equals("null")) {
+                System.out.println("here");
+                System.out.println(Arrays.toString(setMultiMap.get(key).toArray()));
             }
 
-            // top 10 links for coll. freq.
-            for (int i = 0; i < maxValuesColl.length; i++) {
-                if (collFreq_timesUsed > maxValuesColl[i]) {
-                    maxValuesColl[i] = collFreq_timesUsed;
-                    maxKeysColl[i] = key;
-                    break;
-                }
+            if (redirectMultiMap.containsKey(key)) {
+                isRedirect = String.valueOf(redirectMultiMap.get(key).toArray()[0]);
             }
-            IOUtils.write(key + "\t" + docFreq_timesUsed + "\t" + collFreq_timesUsed + "\n", out, "UTF-8");
-        }
 
-        System.out.println("\n=== Top 10 (Link Document Freq.) ===");
-        for (int i = 0; i < maxValuesDoc.length; i++) {
-            System.out.println(maxKeysDoc[i] + " - " + maxValuesDoc[i] + " (" + setMultiMap.get(maxKeysDoc[i]).toArray().length + ")");
+            IOUtils.write(key + "\t" + docFreq_timesUsed + "\t" + collFreq_timesUsed + "\t" + isRedirect + "\n", output, "UTF-8");
         }
+    }
 
-        System.out.println("\n=== Top 10 (Link Collection Freq.) ===");
-        for (int i = 0; i < maxValuesColl.length; i++) {
-            System.out.println(maxKeysColl[i] + " - " + maxValuesColl[i] + " (" + multimap.get(maxKeysColl[i]).toArray().length + ")");
+    // write link document and collection frequency to file
+    public void writeTextFrequencies(Multimap<String, String> multimap,
+                                     SetMultimap<String, String> setMultiMap,
+                                     FileOutputStream output) throws IOException {
+        int docFreq_timesUsed = 0;
+        int collFreq_timesUsed = 0;
+
+        for (String key : multimap.keySet()) {
+            collFreq_timesUsed = multimap.get(key).toArray().length;
+            docFreq_timesUsed = setMultiMap.get(key).toArray().length;
+
+            IOUtils.write(key + "\t" + docFreq_timesUsed + "\t" + collFreq_timesUsed + "\n", output, "UTF-8");
         }
     }
 

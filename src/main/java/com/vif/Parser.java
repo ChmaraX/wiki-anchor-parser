@@ -11,6 +11,7 @@ public class Parser {
     Pattern titlePattern = Pattern.compile("<title>(.*?)</title>");
     Pattern textPattern = Pattern.compile("<text.*>(.*?)</text>", Pattern.DOTALL);
     Pattern anchorPattern = Pattern.compile("(\\[\\[([^]\\[:#&;{$]+)\\|([^]\\[:]+)]]|\\[\\[([^]\\[:#&;{$]+)]])(\\p{L}*)(?![^&lt;]*&lt;/pre&gt;)", Pattern.DOTALL);
+    Pattern redirectPattern = Pattern.compile("#REDIRECT", Pattern.CASE_INSENSITIVE);
     // regex explained: https://regex101.com/r/o5kqCH/2/
 
     public Parser() {
@@ -42,6 +43,15 @@ public class Parser {
         return null;
     }
 
+    public boolean isRedirect() {
+        if (getText() == null) {
+            return false;
+        }
+        Matcher matcher = redirectPattern.matcher(getText());
+
+        return matcher.find();
+    }
+
     public ArrayList<String> getAnchors() {
         if (getText() == null) {
             return null;
@@ -68,13 +78,26 @@ public class Parser {
             anchorsParsed.add(anchor.trim());
         }
 
+        // if there are no anchors in text
+        if (anchorsParsed.isEmpty()) {
+            return null;
+        }
         return anchorsParsed;
     }
 
     public void parseLineToHashMap(String line, Hashmap hashmap) {
         String title = line.split("\t")[0];
         String[] a = line.split("\t");
-        String[] anchors = Arrays.copyOfRange(a, 1, a.length); // remove title (1st el.) from delimited array
+
+        // must have atleast title + 1 anchor
+        if (a.length < 2) {
+            return;
+        }
+
+        // remove first and last el. (title and redirect) from delimited array
+        String[] anchors = Arrays.copyOfRange(a, 1, a.length - 1);
+        boolean isRedirect = Boolean.parseBoolean(a[a.length - 1]);
+        hashmap.getRedirectSMM().put(title, isRedirect);
 
         if (anchors.length > 0) {
             for (int j = 0; j < anchors.length; j++) {
@@ -88,7 +111,7 @@ public class Parser {
                     // Collection Freq. MM
                     hashmap.getAnchorLinkMM().put(anchor[0], title); // { key: anchor_link1; value: [page1, page2, page2] }
                     hashmap.getAnchorTextMM().put(anchor[0], title);
-                } else if (anchor.length != 0){
+                } else {
                     // Document Freq. HM
                     hashmap.getAnchorLinkSMM().put(anchor[0], title);
                     hashmap.getAnchorTextSMM().put(anchor[1], title);
