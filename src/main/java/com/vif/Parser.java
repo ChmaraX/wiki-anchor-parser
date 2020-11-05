@@ -11,7 +11,7 @@ public class Parser {
     Pattern titlePattern = Pattern.compile("<title>(.*?)</title>");
     Pattern textPattern = Pattern.compile("<text.*>(.*?)</text>", Pattern.DOTALL);
     Pattern anchorPattern = Pattern.compile("(\\[\\[([^]\\[:#&;{$]+)\\|([^]\\[:]+)]]|\\[\\[([^]\\[:#&;{$]+)]])(\\p{L}*)(?![^&lt;]*&lt;/pre&gt;)", Pattern.DOTALL);
-    Pattern redirectPattern = Pattern.compile("#REDIRECT", Pattern.CASE_INSENSITIVE);
+    Pattern redirectPattern = Pattern.compile("^#REDIRECT", Pattern.CASE_INSENSITIVE);
     // regex explained: https://regex101.com/r/o5kqCH/2/
 
     public Parser() {

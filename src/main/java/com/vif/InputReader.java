@@ -1,6 +1,8 @@
 package com.vif;
 
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
 import com.google.common.collect.SetMultimap;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -82,17 +84,19 @@ public class InputReader {
             collFreq_timesUsed = multimap.get(key).toArray().length;
             docFreq_timesUsed = setMultiMap.get(key).toArray().length;
             String isRedirect = "";
-
-            if (key.equals("null")) {
-                System.out.println("here");
-                System.out.println(Arrays.toString(setMultiMap.get(key).toArray()));
-            }
+            String redirectLink = "";
 
             if (redirectMultiMap.containsKey(key)) {
                 isRedirect = String.valueOf(redirectMultiMap.get(key).toArray()[0]);
+
+                // if redirect = true, get link (key) from title (value) => inverse map
+                if (Boolean.parseBoolean(isRedirect)) {
+                    SetMultimap<String, String> inverted = Multimaps.invertFrom(setMultiMap , HashMultimap.create());
+                    redirectLink = String.valueOf(inverted.get(key).toArray()[0]);
+                }
             }
 
-            IOUtils.write(key + "\t" + docFreq_timesUsed + "\t" + collFreq_timesUsed + "\t" + isRedirect + "\n", output, "UTF-8");
+            IOUtils.write(key + "\t" + docFreq_timesUsed + "\t" + collFreq_timesUsed + "\t" + isRedirect + "\t" + redirectLink + "\n", output, "UTF-8");
         }
     }
 
