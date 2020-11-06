@@ -10,14 +10,16 @@ public class Main {
         String outputFilePath = "sample.txt";
         String linkFrequenciesFile = "link_freq.csv";
         String textFrequenciesFile = "text_freq.csv";
-
+        String statistics = "statistics.txt";
 
         InputReader inputReader = new InputReader(inputFilePath, outputFilePath);
-        inputReader.processPages(1000);
+        inputReader.processPages(100000);
 
         InputReader outputReader = new InputReader(outputFilePath, linkFrequenciesFile, textFrequenciesFile);
         outputReader.processOutputFile(-1);
 
+        InputReader csvReader = new InputReader(linkFrequenciesFile, statistics);
+        csvReader.createStatistics();
 
         System.out.println("done");
 

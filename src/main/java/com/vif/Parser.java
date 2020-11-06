@@ -111,7 +111,7 @@ public class Parser {
                     // Collection Freq. MM
                     hashmap.getAnchorLinkMM().put(anchor[0], title); // { key: anchor_link1; value: [page1, page2, page2] }
                     hashmap.getAnchorTextMM().put(anchor[0], title);
-                } else {
+                } else if (anchor.length > 1) {
                     // Document Freq. HM
                     hashmap.getAnchorLinkSMM().put(anchor[0], title);
                     hashmap.getAnchorTextSMM().put(anchor[1], title);

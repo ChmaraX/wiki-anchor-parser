@@ -129,5 +129,55 @@ public class InputReader {
         return sb.toString();
     }
 
+    public void createStatistics () throws IOException {
+        int docCountSum = 0;
+        int colCountSum = 0;
+        int totalCount = 0;
+        int redirectCount = 0;
+        int maxDocCount = 0;
+        int maxColCount = 0;
+        String maxDocLine = "";
+        String maxColLine = "";
+        String line;
+
+        while ((line = reader.readLine()) != null) {
+            String[] cols = line.split("\t");
+            int docCount = Integer.parseInt(cols[1]);
+            int colCount = Integer.parseInt(cols[2]);
+            boolean isRedirect;
+
+            if (cols.length > 3) {
+                isRedirect = Boolean.parseBoolean(cols[3]);
+                if (isRedirect) {
+                    redirectCount++;
+                }
+            }
+
+            if (docCount >= maxDocCount) {
+                maxDocCount = docCount;
+                maxDocLine = line;
+            }
+
+            if (colCount >= maxColCount) {
+                maxColCount = colCount;
+                maxColLine = line;
+            }
+
+            docCountSum = docCountSum + docCount;
+            colCountSum = colCountSum + colCount;
+            totalCount++;
+        }
+
+        float avgDocFreq = (float) docCountSum / (float) totalCount;
+        float avgColFreq = (float) colCountSum / (float) totalCount;
+
+        IOUtils.write("Average Link Document Freq." + "\t" + avgDocFreq + "\n", out1, "UTF-8");
+        IOUtils.write("Average Link Collection Freq." + "\t" + avgColFreq + "\n", out1, "UTF-8");
+        IOUtils.write("Max. Link Document Freq." + "\t" + maxDocLine + "\n", out1, "UTF-8");
+        IOUtils.write("Max. Link Collection Freq." + "\t" + maxColLine + "\n", out1, "UTF-8");
+        IOUtils.write("Redirect Count" + "\t" + redirectCount + "\n", out1, "UTF-8");
+
+    }
+
 
 }
