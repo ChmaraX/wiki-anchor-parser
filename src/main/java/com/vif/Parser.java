@@ -2,6 +2,7 @@ package com.vif;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -85,9 +86,65 @@ public class Parser {
         return anchorsParsed;
     }
 
-    public void parseLineToHashMap(String line, Hashmap hashmap) {
+    public void parseLineToHashMapAlter(String line, Hashmap hashmap) {
         String title = line.split("\t")[0];
         String[] a = line.split("\t");
+
+        // must have atleast title + 1 anchor
+        if (a.length < 2) {
+            return;
+        }
+
+        // remove first and last el. (title and redirect) from delimited array
+        String[] anchors = Arrays.copyOfRange(a, 1, a.length - 1);
+        boolean isRedirect = Boolean.parseBoolean(a[a.length - 1]);
+        hashmap.getRedirectSMM().put(title, isRedirect);
+
+        if (anchors.length > 0) {
+            for (int j = 0; j < anchors.length; j++) {
+                //String[] anchor = anchors[j].split("\\|\\|\\|");
+
+                // if link is also text
+                if (anchors[j].split("\\|\\|\\|").length == 1) {
+                    setLinkFreqs(hashmap, anchors[j].split("\\|\\|\\|")[0]);
+                    setTextFreqs(hashmap, anchors[j].split("\\|\\|\\|")[0]);
+                } else if (anchors[j].split("\\|\\|\\|").length > 1) {
+                    setLinkFreqs(hashmap, anchors[j].split("\\|\\|\\|")[0]);
+                    setTextFreqs(hashmap, anchors[j].split("\\|\\|\\|")[1]);
+                }
+            }
+        }
+    }
+
+    public void setLinkFreqs(Hashmap hashmap, String anchor) {
+        Freqs freqs = new Freqs();
+
+        if (hashmap.getAnchorLinkHM().containsKey(anchor)) {
+            freqs.setColFreq(hashmap.getAnchorLinkHM().get(anchor).getColFreq() + 1);
+            freqs.setDocFreq(hashmap.getAnchorLinkHM().get(anchor).getDocFreq());
+        } else {
+            freqs.setColFreq(1);
+            freqs.setDocFreq(1);
+        }
+        hashmap.getAnchorLinkHM().put(anchor, freqs);
+    }
+
+    public void setTextFreqs(Hashmap hashmap, String anchor) {
+        Freqs freqs = new Freqs();
+
+        if (hashmap.getAnchorTextHM().containsKey(anchor)) {
+            freqs.setColFreq(hashmap.getAnchorTextHM().get(anchor).getColFreq() + 1);
+            freqs.setDocFreq(hashmap.getAnchorTextHM().get(anchor).getDocFreq());
+        } else {
+            freqs.setColFreq(1);
+            freqs.setDocFreq(1);
+        }
+        hashmap.getAnchorTextHM().put(anchor, freqs);
+    }
+
+    public void parseLineToHashMap(String line, Hashmap hashmap) {
+        String[] a = line.split("\t");
+        String title = a[0];
 
         // must have atleast title + 1 anchor
         if (a.length < 2) {

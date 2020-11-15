@@ -5,6 +5,8 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.SetMultimap;
 
+import java.util.HashMap;
+
 public class Hashmap {
 
     private SetMultimap<String, String> anchorLinkSMM;
@@ -13,12 +15,33 @@ public class Hashmap {
     private Multimap<String, String> anchorTextMM;
     private Multimap<String, String> anchorLinkMM;
 
+    private HashMap<String, Freqs> anchorLinkHM;
+    private HashMap<String, Freqs> anchorTextHM;
+
     public Hashmap() {
         this.anchorLinkSMM = HashMultimap.create();
         this.anchorTextSMM = HashMultimap.create();
         this.redirectSMM =  HashMultimap.create();
         this.anchorTextMM = ArrayListMultimap.create();
         this.anchorLinkMM = ArrayListMultimap.create();
+        this.anchorLinkHM = new HashMap<>();
+        this.anchorTextHM = new HashMap<>();
+    }
+
+    public HashMap<String, Freqs> getAnchorTextHM() {
+        return anchorTextHM;
+    }
+
+    public void setAnchorTextHM(HashMap<String, Freqs> anchorTextHM) {
+        this.anchorTextHM = anchorTextHM;
+    }
+
+    public HashMap<String, Freqs> getAnchorLinkHM() {
+        return anchorLinkHM;
+    }
+
+    public void setAnchorLinkHM(HashMap<String, Freqs> anchorLinkHM) {
+        this.anchorLinkHM = anchorLinkHM;
     }
 
     public SetMultimap<String, String> getAnchorLinkSMM() {

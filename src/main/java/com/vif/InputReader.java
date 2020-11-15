@@ -62,14 +62,18 @@ public class InputReader {
         // read certain number of lines or till end
         while (recordCount == -1 && (line = reader.readLine()) != null || i < recordCount && (line = reader.readLine()) != null) {
             i++;
-            p.parseLineToHashMap(line, hm);
+            p.parseLineToHashMapAlter(line, hm);
         }
 
-        // write anchor link frequencies
-        writeLinkFrequencies(hm.getAnchorLinkMM(), hm.getAnchorLinkSMM(), hm.getRedirectSMM(), out1);
+        writeLinkFrequenciesAlter(hm.getAnchorLinkHM(), hm.getRedirectSMM(), out1);
+        writeLinkFrequenciesAlter(hm.getAnchorTextHM(), out2);
 
-        // write anchor text frequencies
-        writeTextFrequencies(hm.getAnchorTextMM(), hm.getAnchorTextSMM(), out2);
+
+//        // write anchor link frequencies
+//        writeLinkFrequencies(hm.getAnchorLinkMM(), hm.getAnchorLinkSMM(), hm.getRedirectSMM(), out1);
+//
+//        // write anchor text frequencies
+//        writeTextFrequencies(hm.getAnchorTextMM(), hm.getAnchorTextSMM(), out2);
     }
 
     // write link document and collection frequency (+ if its a redirect) to file
@@ -97,6 +101,40 @@ public class InputReader {
             }
 
             IOUtils.write(key + "\t" + docFreq_timesUsed + "\t" + collFreq_timesUsed + "\t" + isRedirect + "\t" + redirectLink + "\n", output, "UTF-8");
+        }
+    }
+
+    // write link document and collection frequency (+ if its a redirect) to file
+    public void writeLinkFrequenciesAlter(HashMap<String, Freqs> hashmap,
+                                          FileOutputStream output) throws IOException {
+        int docFreq_timesUsed = 0;
+        int collFreq_timesUsed = 0;
+
+        for (String key : hashmap.keySet()) {
+            collFreq_timesUsed = hashmap.get(key).getColFreq();
+            docFreq_timesUsed = hashmap.get(key).getDocFreq();
+
+            IOUtils.write(key + "\t" + docFreq_timesUsed + "\t" + collFreq_timesUsed + "\n", output, "UTF-8");
+        }
+    }
+
+    // write link document and collection frequency (+ if its a redirect) to file
+    public void writeLinkFrequenciesAlter(HashMap<String, Freqs> hashmap,
+                                     SetMultimap<String, Boolean> redirectMultiMap,
+                                     FileOutputStream output) throws IOException {
+        int docFreq_timesUsed = 0;
+        int collFreq_timesUsed = 0;
+
+        for (String key : hashmap.keySet()) {
+            collFreq_timesUsed = hashmap.get(key).getColFreq();
+            docFreq_timesUsed = hashmap.get(key).getDocFreq();
+            String isRedirect = "";
+
+            if (redirectMultiMap.containsKey(key)) {
+                isRedirect = String.valueOf(redirectMultiMap.get(key).toArray()[0]);
+            }
+
+            IOUtils.write(key + "\t" + docFreq_timesUsed + "\t" + collFreq_timesUsed + "\t" + isRedirect + "\n", output, "UTF-8");
         }
     }
 
