@@ -1,9 +1,7 @@
 package com.vif;
 
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Multimaps;
 import com.google.common.collect.SetMultimap;
+import net.intelie.tinymap.TinyMapBuilder;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -53,6 +51,12 @@ public class InputReader {
         fileInputStream.close();
     }
 
+    public static String formatSize(long v) {
+        if (v < 1024) return v + " B";
+        int z = (63 - Long.numberOfLeadingZeros(v)) / 10;
+        return String.format("%.1f %sB", (double)v / (1L << (z*10)), " KMGTPE".charAt(z));
+    }
+
     public void processOutputFile(Integer recordCount) throws IOException {
         Hashmap hm = new Hashmap(); // Hashmaps for statistics
         Parser p = new Parser();
@@ -62,51 +66,25 @@ public class InputReader {
         // read certain number of lines or till end
         while (recordCount == -1 && (line = reader.readLine()) != null || i < recordCount && (line = reader.readLine()) != null) {
             i++;
-            p.parseLineToHashMapAlter(line, hm);
-        }
+            if (i % 100000 == 0) {
+                long heapSize = Runtime.getRuntime().totalMemory();
+                long heapMaxSize = Runtime.getRuntime().maxMemory();
+                long heapFreeSize = Runtime.getRuntime().freeMemory();
 
-        writeLinkFrequenciesAlter(hm.getAnchorLinkHM(), hm.getRedirectSMM(), out1);
-        writeLinkFrequenciesAlter(hm.getAnchorTextHM(), out2);
-
-
-//        // write anchor link frequencies
-//        writeLinkFrequencies(hm.getAnchorLinkMM(), hm.getAnchorLinkSMM(), hm.getRedirectSMM(), out1);
-//
-//        // write anchor text frequencies
-//        writeTextFrequencies(hm.getAnchorTextMM(), hm.getAnchorTextSMM(), out2);
-    }
-
-    // write link document and collection frequency (+ if its a redirect) to file
-    public void writeLinkFrequencies(Multimap<String, String> multimap,
-                                     SetMultimap<String, String> setMultiMap,
-                                     SetMultimap<String, Boolean> redirectMultiMap,
-                                     FileOutputStream output) throws IOException {
-        int docFreq_timesUsed = 0;
-        int collFreq_timesUsed = 0;
-
-        for (String key : multimap.keySet()) {
-            collFreq_timesUsed = multimap.get(key).toArray().length;
-            docFreq_timesUsed = setMultiMap.get(key).toArray().length;
-            String isRedirect = "";
-            String redirectLink = "";
-
-            if (redirectMultiMap.containsKey(key)) {
-                isRedirect = String.valueOf(redirectMultiMap.get(key).toArray()[0]);
-
-                // if redirect = true, get link (key) from title (value) => inverse map
-                if (Boolean.parseBoolean(isRedirect)) {
-                    SetMultimap<String, String> inverted = Multimaps.invertFrom(setMultiMap , HashMultimap.create());
-                    redirectLink = String.valueOf(inverted.get(key).toArray()[0]);
-                }
+                System.out.println("heapFreesize " + formatSize(heapSize) + " / " + formatSize(heapMaxSize) + "free (" + formatSize(heapFreeSize) + ")");
+                System.out.println(i);
             }
-
-            IOUtils.write(key + "\t" + docFreq_timesUsed + "\t" + collFreq_timesUsed + "\t" + isRedirect + "\t" + redirectLink + "\n", output, "UTF-8");
+            p.parseLineToHashMap(line, hm, i);
         }
+
+        writeLinkFrequencies(hm.getAnchorLinkTinyHM(), hm.getRedirectSMM(), out1);
+        writeLinkFrequencies(hm.getAnchorTextTinyHM(), out2);
+
     }
 
     // write link document and collection frequency (+ if its a redirect) to file
-    public void writeLinkFrequenciesAlter(HashMap<String, Freqs> hashmap,
-                                          FileOutputStream output) throws IOException {
+    public void writeLinkFrequencies(TinyMapBuilder<String, Freqs> hashmap,
+                                     FileOutputStream output) throws IOException {
         int docFreq_timesUsed = 0;
         int collFreq_timesUsed = 0;
 
@@ -119,8 +97,8 @@ public class InputReader {
     }
 
     // write link document and collection frequency (+ if its a redirect) to file
-    public void writeLinkFrequenciesAlter(HashMap<String, Freqs> hashmap,
-                                     SetMultimap<String, Boolean> redirectMultiMap,
+    public void writeLinkFrequencies(TinyMapBuilder<String, Freqs> hashmap,
+                                     TinyMapBuilder<String, Boolean> redirectMultiMap,
                                      FileOutputStream output) throws IOException {
         int docFreq_timesUsed = 0;
         int collFreq_timesUsed = 0;
@@ -131,25 +109,10 @@ public class InputReader {
             String isRedirect = "";
 
             if (redirectMultiMap.containsKey(key)) {
-                isRedirect = String.valueOf(redirectMultiMap.get(key).toArray()[0]);
+                isRedirect = String.valueOf(redirectMultiMap.get(key));
             }
 
             IOUtils.write(key + "\t" + docFreq_timesUsed + "\t" + collFreq_timesUsed + "\t" + isRedirect + "\n", output, "UTF-8");
-        }
-    }
-
-    // write link document and collection frequency to file
-    public void writeTextFrequencies(Multimap<String, String> multimap,
-                                     SetMultimap<String, String> setMultiMap,
-                                     FileOutputStream output) throws IOException {
-        int docFreq_timesUsed = 0;
-        int collFreq_timesUsed = 0;
-
-        for (String key : multimap.keySet()) {
-            collFreq_timesUsed = multimap.get(key).toArray().length;
-            docFreq_timesUsed = setMultiMap.get(key).toArray().length;
-
-            IOUtils.write(key + "\t" + docFreq_timesUsed + "\t" + collFreq_timesUsed + "\n", output, "UTF-8");
         }
     }
 
@@ -167,7 +130,7 @@ public class InputReader {
         return sb.toString();
     }
 
-    public void createStatistics () throws IOException {
+    public void createStatistics() throws IOException {
         int docCountSum = 0;
         int colCountSum = 0;
         int totalCount = 0;

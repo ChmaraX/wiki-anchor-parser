@@ -4,6 +4,7 @@ public class Freqs {
 
     private int colFreq;
     private int docFreq;
+    private int pageNum;
 
     public int getColFreq() {
         return colFreq;
@@ -19,5 +20,13 @@ public class Freqs {
 
     public void setDocFreq(int docFreq) {
         this.docFreq = docFreq;
+    }
+
+    public int getPageNum() {
+        return pageNum;
+    }
+
+    public void setPageNum(int pageNum) {
+        this.pageNum = pageNum;
     }
 }

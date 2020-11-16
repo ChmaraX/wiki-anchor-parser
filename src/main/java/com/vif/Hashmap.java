@@ -1,86 +1,44 @@
 package com.vif;
 
-import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
 import com.google.common.collect.SetMultimap;
-
-import java.util.HashMap;
+import net.intelie.tinymap.TinyMap;
+import net.intelie.tinymap.TinyMapBuilder;
 
 public class Hashmap {
 
-    private SetMultimap<String, String> anchorLinkSMM;
-    private SetMultimap<String, String> anchorTextSMM;
-    private SetMultimap<String, Boolean> redirectSMM;
-    private Multimap<String, String> anchorTextMM;
-    private Multimap<String, String> anchorLinkMM;
+    private TinyMapBuilder<String, Boolean> redirectSMM;
+    private TinyMapBuilder<String, Freqs> anchorLinkTinyHM;
+    private TinyMapBuilder<String, Freqs> anchorTextTinyHM;
 
-    private HashMap<String, Freqs> anchorLinkHM;
-    private HashMap<String, Freqs> anchorTextHM;
 
     public Hashmap() {
-        this.anchorLinkSMM = HashMultimap.create();
-        this.anchorTextSMM = HashMultimap.create();
-        this.redirectSMM =  HashMultimap.create();
-        this.anchorTextMM = ArrayListMultimap.create();
-        this.anchorLinkMM = ArrayListMultimap.create();
-        this.anchorLinkHM = new HashMap<>();
-        this.anchorTextHM = new HashMap<>();
+        this.redirectSMM =  TinyMap.builder();
+        this.anchorLinkTinyHM = TinyMap.builder();
+        this.anchorTextTinyHM = TinyMap.builder();
     }
 
-    public HashMap<String, Freqs> getAnchorTextHM() {
-        return anchorTextHM;
+    public TinyMapBuilder<String, Freqs> getAnchorTextTinyHM() {
+        return anchorTextTinyHM;
     }
 
-    public void setAnchorTextHM(HashMap<String, Freqs> anchorTextHM) {
-        this.anchorTextHM = anchorTextHM;
+    public void setAnchorTextTinyHM(TinyMapBuilder<String, Freqs> anchorTextTinyHM) {
+        this.anchorTextTinyHM = anchorTextTinyHM;
     }
 
-    public HashMap<String, Freqs> getAnchorLinkHM() {
-        return anchorLinkHM;
+    public TinyMapBuilder<String, Freqs> getAnchorLinkTinyHM() {
+        return anchorLinkTinyHM;
     }
 
-    public void setAnchorLinkHM(HashMap<String, Freqs> anchorLinkHM) {
-        this.anchorLinkHM = anchorLinkHM;
+    public void setAnchorLinkTinyHM(TinyMapBuilder<String, Freqs> anchorLinkTinyHM) {
+        this.anchorLinkTinyHM = anchorLinkTinyHM;
     }
 
-    public SetMultimap<String, String> getAnchorLinkSMM() {
-        return anchorLinkSMM;
-    }
-
-    public void setAnchorLinkSMM(SetMultimap<String, String> anchorLinkSMM) {
-        this.anchorLinkSMM = anchorLinkSMM;
-    }
-
-    public SetMultimap<String, String> getAnchorTextSMM() {
-        return anchorTextSMM;
-    }
-
-    public void setAnchorTextSMM(SetMultimap<String, String> anchorTextSMM) {
-        this.anchorTextSMM = anchorTextSMM;
-    }
-
-    public Multimap<String, String> getAnchorTextMM() {
-        return anchorTextMM;
-    }
-
-    public void setAnchorTextMM(Multimap<String, String> anchorTextMM) {
-        this.anchorTextMM = anchorTextMM;
-    }
-
-    public Multimap<String, String> getAnchorLinkMM() {
-        return anchorLinkMM;
-    }
-
-    public SetMultimap<String, Boolean> getRedirectSMM() {
+    public TinyMapBuilder<String, Boolean> getRedirectSMM() {
         return redirectSMM;
     }
 
-    public void setRedirectSMM(SetMultimap<String, Boolean> redirectSMM) {
+    public void setRedirectSMM(TinyMapBuilder<String, Boolean> redirectSMM) {
         this.redirectSMM = redirectSMM;
-    }
-
-    public void setAnchorLinkMM(Multimap<String, String> anchorLinkMM) {
-        this.anchorLinkMM = anchorLinkMM;
     }
 }
