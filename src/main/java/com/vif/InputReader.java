@@ -36,6 +36,10 @@ public class InputReader {
             i++;
             String page = readRawPage();
 
+            if (page == null) {
+                return;
+            }
+
             Parser p = new Parser(page);
             String title = p.getTitle();
             ArrayList<String> anchors = p.getAnchors();
@@ -119,7 +123,11 @@ public class InputReader {
     public String readRawPage() throws IOException {
 
         StringBuilder sb = new StringBuilder();
-        String line = reader.readLine().trim();
+        String line = reader.readLine();
+
+        if (line == null) {
+            return null;
+        }
 
         while (!line.startsWith("</page>")) {
             sb.append(line).append("\n");
