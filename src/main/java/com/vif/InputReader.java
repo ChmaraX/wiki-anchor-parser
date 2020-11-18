@@ -1,6 +1,5 @@
 package com.vif;
 
-import com.google.common.collect.SetMultimap;
 import net.intelie.tinymap.TinyMapBuilder;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -120,12 +119,12 @@ public class InputReader {
         }
     }
 
-    public String readRawPage() throws IOException {
+    public String readRawPage() throws IOException  {
 
         StringBuilder sb = new StringBuilder();
         String line = reader.readLine();
 
-        if (line == null) {
+        if (line == null || line.startsWith("</mediawiki>")) {
             return null;
         }
 
