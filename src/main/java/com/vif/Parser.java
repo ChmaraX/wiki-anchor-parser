@@ -59,8 +59,9 @@ public class Parser {
         if (getText() == null) {
             return null;
         }
-        Matcher matcher1 = anchorPattern1.matcher(getText());
-        Matcher matcher2 = anchorPattern2.matcher(getText());
+        String pageText = getText();
+        Matcher matcher1 = anchorPattern1.matcher(pageText);
+        Matcher matcher2 = anchorPattern2.matcher(pageText);
 
         ArrayList<String> anchorsParsed = new ArrayList<>();
 
@@ -82,17 +83,15 @@ public class Parser {
 
         while (matcher2.find()) {
             String link = "";
-            String text = "";
 
-            if (matcher2.group(1) != null && matcher2.group(2) != null) {
+            if (matcher2.group(1) != null) {
                 link = matcher2.group(1).trim();
-                text = matcher2.group(1).trim();
             }
 
             String trail = matcher2.group(2).trim();
 
             // "|||" is delimiter
-            String anchor = link + "|||" + text + trail;
+            String anchor = link + "|||" + link + trail;
             anchorsParsed.add(anchor.trim());
         }
 
