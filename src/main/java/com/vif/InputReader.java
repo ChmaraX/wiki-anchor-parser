@@ -1,8 +1,9 @@
 package com.vif;
 
-import com.google.common.collect.SetMultimap;
 import net.intelie.tinymap.TinyMapBuilder;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.*;
@@ -11,22 +12,16 @@ import java.util.*;
 public class InputReader {
 
     private final BufferedReader reader;
-    private FileOutputStream out1 = null;
-    private FileOutputStream out2 = null;
+    private FileOutputStream out;
+    private final File outputFile;
 
     private final FileInputStream fileInputStream;
-
-    public InputReader(String fileIn, String fileOut1, String fileOut2) throws IOException {
-        this.fileInputStream = new FileInputStream(new File(fileIn));
-        this.reader = new BufferedReader(new InputStreamReader(fileInputStream), 1000 * 8192);
-        this.out1 = new FileOutputStream(new File(fileOut1));
-        this.out2 = new FileOutputStream(new File(fileOut2));
-    }
 
     public InputReader(String fileIn, String fileOut1) throws IOException {
         this.fileInputStream = new FileInputStream(new File(fileIn));
         this.reader = new BufferedReader(new InputStreamReader(fileInputStream), 1000 * 8192);
-        this.out1 = new FileOutputStream(new File(fileOut1));
+        this.outputFile = new File(fileOut1);
+        this.out = new FileOutputStream(outputFile, true);
     }
 
     public void processPages(Integer pageCount) throws IOException {
@@ -43,7 +38,7 @@ public class InputReader {
 
             // write only if anchors found
             if (anchors != null) {
-                IOUtils.write(title + "\t" + StringUtils.join(anchors, "\t") + "\t" + isRedirect + "\n", out1, "UTF-8");
+                IOUtils.write(title + "\t" + StringUtils.join(anchors, "\t") + "\t" + isRedirect + "\n", out, "UTF-8");
             }
 
         }
@@ -57,7 +52,7 @@ public class InputReader {
         return String.format("%.1f %sB", (double)v / (1L << (z*10)), " KMGTPE".charAt(z));
     }
 
-    public void processOutputFile(Integer recordCount) throws IOException {
+    public void processOutputFile(Integer recordCount, boolean isLinkFreq) throws IOException {
         Hashmap hm = new Hashmap(); // Hashmaps for statistics
         Parser p = new Parser();
         String line;
@@ -71,29 +66,16 @@ public class InputReader {
                 long heapMaxSize = Runtime.getRuntime().maxMemory();
                 long heapFreeSize = Runtime.getRuntime().freeMemory();
 
-                System.out.println("heapFreesize " + formatSize(heapSize) + " / " + formatSize(heapMaxSize) + "free (" + formatSize(heapFreeSize) + ")");
+                System.out.println("heap " + formatSize(heapSize) + " / " + formatSize(heapMaxSize) + " free (" + formatSize(heapFreeSize) + ")");
                 System.out.println(i);
             }
-            p.parseLineToHashMap(line, hm, i);
+
+            p.parseLineToHashMap(line, hm, i, isLinkFreq);
         }
 
-        writeLinkFrequencies(hm.getAnchorLinkTinyHM(), hm.getRedirectSMM(), out1);
-        writeLinkFrequencies(hm.getAnchorTextTinyHM(), out2);
+        TinyMapBuilder<String, Freqs> anchorHashmap = isLinkFreq ? hm.getAnchorLinkTinyHM() : hm.getAnchorTextTinyHM();
+        writeLinkFrequencies(anchorHashmap, hm.getRedirectTinyHM(), out);
 
-    }
-
-    // write link document and collection frequency (+ if its a redirect) to file
-    public void writeLinkFrequencies(TinyMapBuilder<String, Freqs> hashmap,
-                                     FileOutputStream output) throws IOException {
-        int docFreq_timesUsed = 0;
-        int collFreq_timesUsed = 0;
-
-        for (String key : hashmap.keySet()) {
-            collFreq_timesUsed = hashmap.get(key).getColFreq();
-            docFreq_timesUsed = hashmap.get(key).getDocFreq();
-
-            IOUtils.write(key + "\t" + docFreq_timesUsed + "\t" + collFreq_timesUsed + "\n", output, "UTF-8");
-        }
     }
 
     // write link document and collection frequency (+ if its a redirect) to file
@@ -130,7 +112,7 @@ public class InputReader {
         return sb.toString();
     }
 
-    public void createStatistics() throws IOException {
+    public void createStatistics(boolean isLink) throws IOException {
         int docCountSum = 0;
         int colCountSum = 0;
         int totalCount = 0;
@@ -156,12 +138,12 @@ public class InputReader {
 
             if (docCount >= maxDocCount) {
                 maxDocCount = docCount;
-                maxDocLine = line;
+                maxDocLine = Arrays.toString(ArrayUtils.remove(line.split("\t"), 2));
             }
 
             if (colCount >= maxColCount) {
                 maxColCount = colCount;
-                maxColLine = line;
+                maxColLine = Arrays.toString(ArrayUtils.remove(line.split("\t"), 1));
             }
 
             docCountSum = docCountSum + docCount;
@@ -172,11 +154,18 @@ public class InputReader {
         float avgDocFreq = (float) docCountSum / (float) totalCount;
         float avgColFreq = (float) colCountSum / (float) totalCount;
 
-        IOUtils.write("Average Link Document Freq." + "\t" + avgDocFreq + "\n", out1, "UTF-8");
-        IOUtils.write("Average Link Collection Freq." + "\t" + avgColFreq + "\n", out1, "UTF-8");
-        IOUtils.write("Max. Link Document Freq." + "\t" + maxDocLine + "\n", out1, "UTF-8");
-        IOUtils.write("Max. Link Collection Freq." + "\t" + maxColLine + "\n", out1, "UTF-8");
-        IOUtils.write("Redirect Count" + "\t" + redirectCount + "\n", out1, "UTF-8");
+        String which = isLink ? "Link" : "Text";
+
+        FileUtils.writeStringToFile(outputFile, "======= Anchor " + which + " Stats ========\n", "UTF-8", true);
+        FileUtils.writeStringToFile(outputFile, "Total number of " + which + "\t" + totalCount + "\n\n", "UTF-8", true);
+        FileUtils.writeStringToFile(outputFile, "Average " + which + " Document Freq." + "\t" + avgDocFreq + "\n", "UTF-8", true);
+        FileUtils.writeStringToFile(outputFile, "Average " + which + " Collection Freq." + "\t" + avgColFreq + "\n\n", "UTF-8", true);
+        FileUtils.writeStringToFile(outputFile, "Max. " + which + " Document Freq." + "\t" + maxDocLine + "\n", "UTF-8", true);
+        FileUtils.writeStringToFile(outputFile, "Max. " + which + " Collection Freq." + "\t" + maxColLine + "\n\n", "UTF-8", true);
+
+        if (isLink) {
+            FileUtils.writeStringToFile(outputFile, "Redirect Count" + "\t" + redirectCount + "\n\n", "UTF-8", true);
+        }
 
     }
 

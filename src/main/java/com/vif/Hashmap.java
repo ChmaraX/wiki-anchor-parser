@@ -1,19 +1,17 @@
 package com.vif;
 
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.SetMultimap;
 import net.intelie.tinymap.TinyMap;
 import net.intelie.tinymap.TinyMapBuilder;
 
 public class Hashmap {
 
-    private TinyMapBuilder<String, Boolean> redirectSMM;
+    private TinyMapBuilder<String, Boolean> redirectTinyHM;
     private TinyMapBuilder<String, Freqs> anchorLinkTinyHM;
     private TinyMapBuilder<String, Freqs> anchorTextTinyHM;
 
 
     public Hashmap() {
-        this.redirectSMM =  TinyMap.builder();
+        this.redirectTinyHM =  TinyMap.builder();
         this.anchorLinkTinyHM = TinyMap.builder();
         this.anchorTextTinyHM = TinyMap.builder();
     }
@@ -34,11 +32,11 @@ public class Hashmap {
         this.anchorLinkTinyHM = anchorLinkTinyHM;
     }
 
-    public TinyMapBuilder<String, Boolean> getRedirectSMM() {
-        return redirectSMM;
+    public TinyMapBuilder<String, Boolean> getRedirectTinyHM() {
+        return redirectTinyHM;
     }
 
-    public void setRedirectSMM(TinyMapBuilder<String, Boolean> redirectSMM) {
-        this.redirectSMM = redirectSMM;
+    public void setRedirectTinyHM(TinyMapBuilder<String, Boolean> redirectTinyHM) {
+        this.redirectTinyHM = redirectTinyHM;
     }
 }

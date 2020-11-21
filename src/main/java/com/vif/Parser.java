@@ -87,7 +87,7 @@ public class Parser {
         return anchorsParsed;
     }
 
-    public void parseLineToHashMap(String line, Hashmap hashmap, int lineNum) {
+    public void parseLineToHashMap(String line, Hashmap hashmap, int lineNum, boolean isLinkFreq) {
         String title = line.split("\t")[0];
         String[] a = line.split("\t");
 
@@ -98,8 +98,13 @@ public class Parser {
 
         // remove first and last el. (title and redirect) from delimited array
         String[] anchors = Arrays.copyOfRange(a, 1, a.length - 1);
-        boolean isRedirect = Boolean.parseBoolean(a[a.length - 1]);
-        hashmap.getRedirectSMM().put(title, isRedirect);
+
+        if (isLinkFreq) {
+            boolean isRedirect = Boolean.parseBoolean(a[a.length - 1]);
+            hashmap.getRedirectTinyHM().put(title, isRedirect);
+        }
+
+        TinyMapBuilder<String, Freqs> anchorHashmap = isLinkFreq ? hashmap.getAnchorLinkTinyHM() : hashmap.getAnchorTextTinyHM();
 
         if (anchors.length > 0) {
             for (int j = 0; j < anchors.length; j++) {
@@ -107,56 +112,32 @@ public class Parser {
 
                 // if link is also text
                 if (anchor.length == 1) {
-                    setLinkFreqs(hashmap, anchor[0], lineNum);
-                    setTextFreqs(hashmap, anchor[0], lineNum);
+                    setFreqs(anchorHashmap, anchor[0], lineNum);
                 } else if (anchor.length > 1) {
-                    setLinkFreqs(hashmap, anchor[0], lineNum);
-                    setTextFreqs(hashmap, anchor[1], lineNum);
+                    setFreqs(anchorHashmap, anchor[isLinkFreq ? 0 : 1], lineNum);
                 }
             }
         }
     }
 
-    public void setLinkFreqs(Hashmap hashmap, String anchor, int pageNum) {
+    public void setFreqs(TinyMapBuilder<String, Freqs> hashmap, String anchor, int pageNum) {
         Freqs freqs = new Freqs();
-        TinyMapBuilder<String, Freqs> anchorLinkHM = hashmap.getAnchorLinkTinyHM();
         freqs.setPageNum(pageNum);
 
-        if (anchorLinkHM.containsKey(anchor)) {
-            freqs.setColFreq(anchorLinkHM.get(anchor).getColFreq() + 1);
+        if (hashmap.containsKey(anchor)) {
+            freqs.setColFreq(hashmap.get(anchor).getColFreq() + 1);
 
-            if (anchorLinkHM.get(anchor).getPageNum() != freqs.getPageNum()) {
-                freqs.setDocFreq(anchorLinkHM.get(anchor).getDocFreq() + 1);
+            if (hashmap.get(anchor).getPageNum() != freqs.getPageNum()) {
+                freqs.setDocFreq(hashmap.get(anchor).getDocFreq() + 1);
             } else {
-                freqs.setDocFreq(anchorLinkHM.get(anchor).getDocFreq());
+                freqs.setDocFreq(hashmap.get(anchor).getDocFreq());
             }
 
         } else {
             freqs.setColFreq(1);
             freqs.setDocFreq(1);
         }
-        anchorLinkHM.put(anchor, freqs);
-    }
-
-    public void setTextFreqs(Hashmap hashmap, String anchor, int pageNum) {
-        Freqs freqs = new Freqs();
-        TinyMapBuilder<String, Freqs> anchorTextHM = hashmap.getAnchorTextTinyHM();
-        freqs.setPageNum(pageNum);
-
-        if (anchorTextHM.containsKey(anchor)) {
-            freqs.setColFreq(anchorTextHM.get(anchor).getColFreq() + 1);
-
-            if (anchorTextHM.get(anchor).getPageNum() != freqs.getPageNum()) {
-                freqs.setDocFreq(anchorTextHM.get(anchor).getDocFreq() + 1);
-            } else {
-                freqs.setDocFreq(anchorTextHM.get(anchor).getDocFreq());
-            }
-
-        } else {
-            freqs.setColFreq(1);
-            freqs.setDocFreq(1);
-        }
-        anchorTextHM.put(anchor, freqs);
+        hashmap.put(anchor, freqs);
     }
 
 }
