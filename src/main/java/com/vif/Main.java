@@ -12,8 +12,8 @@ public class Main {
         String textFrequenciesFile = "text_freq.csv";
         String statistics = "statistics.txt";
 
-        InputReader inputReader = new InputReader(inputFilePath, outputFilePath);
-        inputReader.processPages(-1);
+//        InputReader inputReader = new InputReader(inputFilePath, outputFilePath);
+//        inputReader.processPages(1000);
 
         InputReader outputReader = new InputReader(outputFilePath, linkFrequenciesFile, textFrequenciesFile);
         outputReader.processOutputFile(-1);

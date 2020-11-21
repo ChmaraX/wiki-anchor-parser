@@ -12,8 +12,7 @@ public class Parser {
 
     Pattern titlePattern = Pattern.compile("<title>(.*?)</title>");
     Pattern textPattern = Pattern.compile("<text.*>(.*?)</text>", Pattern.DOTALL);
-    Pattern anchorPattern1 = Pattern.compile("\\[\\[([^]\\[:#&;{$]+?)\\|(.+?)]](\\p{L}*)", Pattern.DOTALL);
-    Pattern anchorPattern2 = Pattern.compile("\\[\\[([^]\\[:#&;|{$]+?)]](\\p{L}*)", Pattern.DOTALL);
+    Pattern anchorPattern = Pattern.compile("(\\[\\[([^]\\[:#&;{$]+)\\|([^]\\[:]+)]]|\\[\\[([^]\\[:#&;{$]+)]])(\\p{L}*)(?![^&lt;]*&lt;/pre&gt;)", Pattern.DOTALL);
     Pattern redirectPattern = Pattern.compile("^#REDIRECT", Pattern.CASE_INSENSITIVE);
     // regex explained: https://regex101.com/r/o5kqCH/2/
 
@@ -59,39 +58,25 @@ public class Parser {
         if (getText() == null) {
             return null;
         }
-        String pageText = getText();
-        Matcher matcher1 = anchorPattern1.matcher(pageText);
-        Matcher matcher2 = anchorPattern2.matcher(pageText);
-
+        Matcher matcher = anchorPattern.matcher(getText());
         ArrayList<String> anchorsParsed = new ArrayList<>();
 
-        while (matcher1.find()) {
+        while (matcher.find()) {
             String link = "";
             String text = "";
 
-            if (matcher1.group(1) != null && matcher1.group(2) != null) {
-                link = matcher1.group(1).trim();
-                text = matcher1.group(2).trim();
+            if (matcher.group(2) != null && matcher.group(3) != null) {
+                link = matcher.group(2).trim();
+                text = matcher.group(3).trim();
+            } else {
+                text = matcher.group(4).trim();
+                link = matcher.group(4).trim();
             }
 
-            String trail = matcher1.group(3).trim();
+            String trail = matcher.group(5).trim();
 
             // "|||" is delimiter
             String anchor = link + "|||" + text + trail;
-            anchorsParsed.add(anchor.trim());
-        }
-
-        while (matcher2.find()) {
-            String link = "";
-
-            if (matcher2.group(1) != null) {
-                link = matcher2.group(1).trim();
-            }
-
-            String trail = matcher2.group(2).trim();
-
-            // "|||" is delimiter
-            String anchor = link + "|||" + link + trail;
             anchorsParsed.add(anchor.trim());
         }
 

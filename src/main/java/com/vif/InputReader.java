@@ -1,5 +1,6 @@
 package com.vif;
 
+import com.google.common.collect.SetMultimap;
 import net.intelie.tinymap.TinyMapBuilder;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -34,10 +35,6 @@ public class InputReader {
         while (pageCount == -1 || i < pageCount) {
             i++;
             String page = readRawPage();
-
-            if (page == null) {
-                return;
-            }
 
             Parser p = new Parser(page);
             String title = p.getTitle();
@@ -119,14 +116,10 @@ public class InputReader {
         }
     }
 
-    public String readRawPage() throws IOException  {
+    public String readRawPage() throws IOException {
 
         StringBuilder sb = new StringBuilder();
-        String line = reader.readLine();
-
-        if (line == null || line.startsWith("</mediawiki>")) {
-            return null;
-        }
+        String line = reader.readLine().trim();
 
         while (!line.startsWith("</page>")) {
             sb.append(line).append("\n");
