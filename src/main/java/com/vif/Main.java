@@ -1,11 +1,10 @@
 package com.vif;
 
-import org.apache.commons.compress.compressors.CompressorException;
 import java.io.*;
 
 public class Main {
 
-    public static void main(String[] args) throws IOException, CompressorException {
+    public static void main(String[] args) throws IOException {
         String inputFilePath = "metawiki-latest-pages-articles.xml";
         String outputFilePath = "sample.txt";
         String linkFrequenciesFile = "link_freq.csv";
