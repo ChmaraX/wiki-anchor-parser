@@ -15,10 +15,10 @@ public class Main {
 //        inputReader.processPages(1000);
 
         InputReader linkFreqReader = new InputReader(outputFilePath, linkFrequenciesFile);
-        linkFreqReader.processOutputFile(100000, true);
+        linkFreqReader.processOutputFile(1000, true);
 
         InputReader linkTextReader = new InputReader(outputFilePath, textFrequenciesFile);
-        linkTextReader.processOutputFile(100000, false);
+        linkTextReader.processOutputFile(1000, false);
 
         InputReader csvReaderLink = new InputReader(linkFrequenciesFile, statistics);
         csvReaderLink.createStatistics(true);
