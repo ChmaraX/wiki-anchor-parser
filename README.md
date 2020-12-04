@@ -20,11 +20,14 @@
   
 ## Running
 
-In root directory run: `mvn compile exec:java -Dexec.mainClass="com.vif.Main"`
+In root directory run:
+
+```bash
+mvn compile exec:java -Dexec.mainClass="com.vif.Main"
+```
 
 Optionally (depending on machine), for processing large files you can increase some JVM parameters before running command above:
 `export MAVEN_OPTS="-Xmx8192m -Xss2048m"`
-
 
 ### Indexing
 
@@ -32,8 +35,9 @@ Run `./index.sh` in order to index output .csv files. After few minutes, all fil
 be successfully imported to Elasticsearch (localhost:9200) using Logstash (localhost:5000). 
 
 In order to search indexed files, run: 
-
-`./search.sh -i <name-of-index> -f <field-name> -q <query> -n <num-of-result>`
+```bash
+./search.sh -i <name-of-index> -f <field-name> -q <query> -n <num-of-result>
+```
 
 - `-i` index to search in (can be either `link_freq` or `text_freq`, default is `link_freq`)
 - `-n` specifies number of results to be returned (default is `10`)
@@ -41,9 +45,14 @@ In order to search indexed files, run:
 - `-q` specifies query that should be matched
 
 Example:
-`./search.sh -i link_freq -f link_name -q anarchism -n 5`
+```bash
+./search.sh -i link_freq -f link_name -q anarchism -n 5
+```
 
-Shutting down containers: `cd elk-docker && docker-compose down`
+Shutting down containers: 
+```
+cd elk-docker && docker-compose down
+```
 
 # Results
 
@@ -55,9 +64,9 @@ Shutting down containers: `cd elk-docker && docker-compose down`
   
 2) after parsing of initial XML 
 
-    - `pages-parsed.txt` - 16 388 705 pages (11GB)
+    - `sample.txt` - 16 388 705 pages (11GB)
 
-3) after parsing of `pages-parsed.txt`
+3) after parsing of `sample.txt`
 
     - `link_freq.csv` - 19 675 581 unique anchor links (526MB)
 
@@ -65,3 +74,12 @@ Shutting down containers: `cd elk-docker && docker-compose down`
 
     - `statistics.txt` - file containing anchor link and text statistics 
 (avg. document and collection frequencies, redirect count, total numbers, maximums)
+
+Optionally, you can sort .csv files using: 
+
+```bash
+LC_ALL=C sort -S 50% -t$'\t' -k2 -rn link_freq.csv > link_freq_sorted.csv
+```
+
+- `k2` - for document frequency
+- `k3` - for collection frequency
