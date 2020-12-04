@@ -1,5 +1,8 @@
 package com.vif;
 
+/**
+ * Object that holds page number, document and collection frequency that is stored in Hashmap<String,Freqs>
+ */
 public class Freqs {
 
     private int colFreq;

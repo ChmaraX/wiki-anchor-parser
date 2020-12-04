@@ -9,6 +9,10 @@ import org.apache.commons.lang3.StringUtils;
 import java.io.*;
 import java.util.*;
 
+/**
+ * Reads raw data from input files, uses Parser class for transformation
+ * and then writes transformed data into output files
+ */
 public class InputReader {
 
     private final BufferedReader reader;
@@ -17,19 +21,35 @@ public class InputReader {
 
     private final FileInputStream fileInputStream;
 
-    public InputReader(String fileIn, String fileOut1) throws IOException {
+    /**
+     * Initializes InputReader with input and output files
+     * @param fileIn input file to read from
+     * @param fileOut output file to write into
+     * @throws IOException
+     */
+    public InputReader(String fileIn, String fileOut) throws IOException {
         this.fileInputStream = new FileInputStream(new File(fileIn));
         this.reader = new BufferedReader(new InputStreamReader(fileInputStream), 1000 * 8192);
-        this.outputFile = new File(fileOut1);
+        this.outputFile = new File(fileOut);
         this.out = new FileOutputStream(outputFile, true);
     }
 
+    /**
+     * Parses titles and anchors from pages in XML file and writes into output file in
+     * format: "<title>\tab<link>|||<text>\tab ... \tab<is_redirect>"
+     * @param pageCount number of pages to process ("-1" for all)
+     * @throws IOException
+     */
     public void processPages(Integer pageCount) throws IOException {
         int i = 0;
         // read certain number of lines or till end
         while (pageCount == -1 || i < pageCount) {
             i++;
             String page = readRawPage();
+
+            if (page == null) {
+                return;
+            }
 
             Parser p = new Parser(page);
             String title = p.getTitle();
@@ -46,12 +66,12 @@ public class InputReader {
         fileInputStream.close();
     }
 
-    public static String formatSize(long v) {
-        if (v < 1024) return v + " B";
-        int z = (63 - Long.numberOfLeadingZeros(v)) / 10;
-        return String.format("%.1f %sB", (double)v / (1L << (z*10)), " KMGTPE".charAt(z));
-    }
-
+    /**
+     * Reads parsed pages from input file and stores them to hashmap
+     * @param recordCount number of records to parse ("-1" for all)
+     * @param isLinkFreq boolean to determine if link or text frequencies should be processed
+     * @throws IOException
+     */
     public void processOutputFile(Integer recordCount, boolean isLinkFreq) throws IOException {
         Hashmap hm = new Hashmap(); // Hashmaps for statistics
         Parser p = new Parser();
@@ -62,12 +82,7 @@ public class InputReader {
         while (recordCount == -1 && (line = reader.readLine()) != null || i < recordCount && (line = reader.readLine()) != null) {
             i++;
             if (i % 100000 == 0) {
-                long heapSize = Runtime.getRuntime().totalMemory();
-                long heapMaxSize = Runtime.getRuntime().maxMemory();
-                long heapFreeSize = Runtime.getRuntime().freeMemory();
-
-                System.out.println("heap " + formatSize(heapSize) + " / " + formatSize(heapMaxSize) + " free (" + formatSize(heapFreeSize) + ")");
-                System.out.println(i);
+                System.out.println("Pages parsed: " + i);
             }
 
             p.parseLineToHashMap(line, hm, i, isLinkFreq);
@@ -78,7 +93,13 @@ public class InputReader {
 
     }
 
-    // write link document and collection frequency (+ if its a redirect) to file
+    /**
+     * Writes link or text frequencies to file
+     * @param hashmap
+     * @param redirectMultiMap
+     * @param output
+     * @throws IOException
+     */
     public void writeLinkFrequencies(TinyMapBuilder<String, Freqs> hashmap,
                                      TinyMapBuilder<String, Boolean> redirectMultiMap,
                                      FileOutputStream output) throws IOException {
@@ -98,10 +119,19 @@ public class InputReader {
         }
     }
 
+    /**
+     * Reads one page from XML
+     * @return
+     * @throws IOException
+     */
     public String readRawPage() throws IOException {
 
         StringBuilder sb = new StringBuilder();
         String line = reader.readLine().trim();
+
+        if (line.startsWith("</mediawiki>")) {
+            return null;
+        }
 
         while (!line.startsWith("</page>")) {
             sb.append(line).append("\n");
@@ -112,6 +142,11 @@ public class InputReader {
         return sb.toString();
     }
 
+    /**
+     * Creates basic statistics from output link and text frequency files
+     * @param isLink boolean to determine if link or text frequencies should be processed
+     * @throws IOException
+     */
     public void createStatistics(boolean isLink) throws IOException {
         int docCountSum = 0;
         int colCountSum = 0;

@@ -3,6 +3,9 @@ package com.vif;
 import net.intelie.tinymap.TinyMap;
 import net.intelie.tinymap.TinyMapBuilder;
 
+/**
+ * Contains data-structures (low footprint hashmaps) for storing and manipulating with data
+ */
 public class Hashmap {
 
     private TinyMapBuilder<String, Boolean> redirectTinyHM;

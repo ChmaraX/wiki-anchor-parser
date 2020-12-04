@@ -7,6 +7,10 @@ import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * Parses data from input/output files to desired form using regexes,
+ * transforms and stores data into data-structures
+ */
 public class Parser {
     private String pageString;
 
@@ -19,6 +23,10 @@ public class Parser {
     public Parser() {
     }
 
+    /**
+     * Initializes Parser with raw page text (from <page> to </page>)
+     * @param pageString
+     */
     public Parser(String pageString) {
         this.pageString = pageString;
     }
@@ -27,6 +35,10 @@ public class Parser {
         return pageString;
     }
 
+    /**
+     * Extracts title from page using regex
+     * @return title of the page
+     */
     public String getTitle() {
         Matcher matcher = titlePattern.matcher(this.pageString);
 
@@ -36,6 +48,10 @@ public class Parser {
         return null;
     }
 
+    /**
+     * Extracts text from page using regex
+     * @return text of the page
+     */
     public String getText() {
         Matcher matcher = textPattern.matcher(this.pageString);
 
@@ -45,6 +61,10 @@ public class Parser {
         return null;
     }
 
+    /**
+     * Checks if page is redirect (starts with redirect anchor) using regex
+     * @return boolean if page is redirect or not
+     */
     public boolean isRedirect() {
         if (getText() == null) {
             return false;
@@ -54,6 +74,11 @@ public class Parser {
         return matcher.find();
     }
 
+    /**
+     * Extracts all anchor texts and links from page text (using regex)
+     * and adds them to ArrayList
+     * @return ArrayList of strings in format "<link>|||<text>"
+     */
     public ArrayList<String> getAnchors() {
         if (getText() == null) {
             return null;
@@ -87,6 +112,13 @@ public class Parser {
         return anchorsParsed;
     }
 
+    /**
+     * Parses line containg title and anchor links/texts to Hashmap<String,Freqs>
+     * @param line in format "<title>\tab<link>|||<text>\tab ... <is_redirect>"
+     * @param hashmap to store entries where anchor link/text is key and Freqs object is value
+     * @param lineNum unique line (page) identifier
+     * @param isLinkFreq boolean to determine if link or text frequencies should be processed
+     */
     public void parseLineToHashMap(String line, Hashmap hashmap, int lineNum, boolean isLinkFreq) {
         String title = line.split("\t")[0];
         String[] a = line.split("\t");
@@ -96,8 +128,8 @@ public class Parser {
             return;
         }
 
-        // remove first and last el. (title and redirect) from delimited array
-        String[] anchors = Arrays.copyOfRange(a, 1, a.length - 1);
+        // remove first (title) element from delimited array, if link freq - remove also last (redirect)
+        String[] anchors = Arrays.copyOfRange(a, 1, isLinkFreq ? a.length - 1 : a.length);
 
         if (isLinkFreq) {
             boolean isRedirect = Boolean.parseBoolean(a[a.length - 1]);
@@ -120,13 +152,22 @@ public class Parser {
         }
     }
 
+    /**
+     * Sets document and collection frequency in Freqs object
+     * @param hashmap to store entries where anchor link/text is key and Freqs object is value
+     * @param anchor anchor text or link to be stored as key
+     * @param pageNum unique line (page) identifier
+     */
     public void setFreqs(TinyMapBuilder<String, Freqs> hashmap, String anchor, int pageNum) {
         Freqs freqs = new Freqs();
         freqs.setPageNum(pageNum);
 
+        // if anchor exists in hashmap
         if (hashmap.containsKey(anchor)) {
+            // increase collection freq
             freqs.setColFreq(hashmap.get(anchor).getColFreq() + 1);
 
+            // increase document frequency only if its not on the same page (document)
             if (hashmap.get(anchor).getPageNum() != freqs.getPageNum()) {
                 freqs.setDocFreq(hashmap.get(anchor).getDocFreq() + 1);
             } else {
