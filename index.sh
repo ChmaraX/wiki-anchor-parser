@@ -20,3 +20,5 @@ cd ../data/
 # Start containers and index files on start
 cd ../elk-docker/
 docker-compose up -d
+
+echo "Please wait few minutes until all documents are indexed"

@@ -1,6 +1,5 @@
 #!/bin/bash
 
-# localhost:9200/link_freq/_search
 ELASTIC_HOST="localhost:9200"
 
 index="link_freq"
@@ -37,8 +36,8 @@ if [[ $index = "link_freq" ]]; then
   hits=results['hits']['hits'];\
   logs=\
   [(result['_source']['$field']+' \
-  | '+result['_source']['doc_freq']+' \
-  | '+result['_source']['col_freq']+' \
+  | '+str(result['_source']['doc_freq'])+' \
+  | '+str(result['_source']['col_freq'])+' \
   | '+str(result['_source']['is_redirect'])) \
   for result in hits];\
   print(*logs, sep='\n')"
@@ -51,8 +50,8 @@ else
   hits=results['hits']['hits'];\
   logs=\
   [(result['_source']['$field']+' \
-  | '+result['_source']['doc_freq']+' \
-  | '+result['_source']['col_freq']) \
+  | '+str(result['_source']['doc_freq'])+' \
+  | '+str(result['_source']['col_freq'])) \
   for result in hits];\
   print(*logs, sep='\n')"
 fi
