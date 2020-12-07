@@ -49,6 +49,11 @@ Example:
 ./search.sh -i link_freq -f link_name -q anarchism -n 5
 ```
 
+There is also an example curl for more complex query - aggregation, that returns top 5 buckets of related links that may be
+interesting to search term we used. Simply run `./sample_index_aggregation.sh` to see query output.
+
+For more complex queries, use Elasticsearch REST API. 
+
 Shutting down containers: 
 ```
 cd elk-docker && docker-compose down
